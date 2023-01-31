@@ -1,7 +1,10 @@
+import "reflect-metadata"
+
 import { ApolloServer } from '@apollo/server';
 import { startStandaloneServer } from '@apollo/server/standalone';
 import { buildSubgraphSchema } from "@apollo/federation";
 import gql from "graphql-tag";
+import { dataSource, productRepository } from "./services/dataSource";
 
 const typeDefs = gql`
     type Product @key(fields: "id") {
@@ -15,37 +18,22 @@ const typeDefs = gql`
     }
 `;
 
-const products = [
-    {
-        id: 1,
-        name: 'Pepsi 12 pack'
-    },
-    {
-        id: 2,
-        name: 'Coffee Cup'
-    },
-    {
-        id: 3,
-        name: 'Laptop Computer'
-    },
-    {
-        id: 4,
-        name: 'Keyboard'
-    },
-];
-
 const resolvers = {
     Product: {
-        __resolveReference(ref) {
-            return products.filter(o => o.id == ref.id)[0];
+        async __resolveReference(ref) {
+            return await productRepository.findOneBy({
+                id: ref.id
+            })
         }
     },
     Query: {
-        product(_, { id }) {
-            return products.filter(o => o.id == id)[0];
+        async product(_, { id }) {
+            return await productRepository.findOneBy({
+                id: id
+            })
         },
-        products() {
-            return products;
+        async products() {
+            return await productRepository.find();
         }
     },
 };
@@ -55,10 +43,11 @@ const server = new ApolloServer({
         typeDefs: typeDefs,
         resolvers: resolvers
     }),
-
 });
 
 const mainAsync = async () => {
+    await dataSource.initialize();
+
     const { url } = await startStandaloneServer(server, {
         listen: { port: 4000 },
     });

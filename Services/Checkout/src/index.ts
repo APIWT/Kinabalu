@@ -1,7 +1,11 @@
+import "reflect-metadata"
+
 import { ApolloServer } from '@apollo/server';
 import { startStandaloneServer } from '@apollo/server/standalone';
 import { buildSubgraphSchema } from "@apollo/federation";
 import gql from "graphql-tag";
+import { dataSource, orderRepository } from "./services/dataSource";
+import { Order } from "./entities/order";
 
 const typeDefs = gql`
   type Order @key(fields: "id") {
@@ -21,42 +25,40 @@ const typeDefs = gql`
   }
 `;
 
-const orders = [
-    {
-        id: 'abc123',
-        cost: 12.50,
-        products: [1, 2]
-    },
-    {
-        id: 'def1234',
-        cost: 100.50,
-        products: [3, 4]
-    },
-];
-
 const resolvers = {
     Order: {
-        products: (order) => {
-            return order.products.map(id => ({
+        async products(order: Order) {
+            return order.lineItems.map(lineItem => ({
                 __typeName: 'Product',
-                id: id
+                id: lineItem.productId
             }))
         },
     },
     Product: {
         orders(product) {
-            return orders.filter(o => {
-                const matchingProductIds = o.products.filter(productId => productId == product.id);
-                return matchingProductIds.length > 0;
+            return orderRepository.find({
+                where: {
+                    lineItems: {
+                        productId: product.id
+                    }
+                },
+                relations: ["lineItems"]
             });
         }
     },
     Query: {
-        order(_, { id }) {
-            return orders.filter(o => o.id == id)[0];
+        async order(_, { id }) {
+            return await orderRepository.findOne({
+                where: {
+                    id: id,
+                },
+                relations: ['lineItems']
+            });
         },
-        orders() {
-            return orders;
+        async orders() {
+            return await orderRepository.find({
+                relations: ['lineItems']
+            });
         }
     },
 };
@@ -69,6 +71,8 @@ const server = new ApolloServer({
 });
 
 const mainAsync = async () => {
+    await dataSource.initialize();
+
     const { url } = await startStandaloneServer(server, {
         listen: { port: 4001 },
     });
