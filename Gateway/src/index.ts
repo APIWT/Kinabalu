@@ -4,7 +4,13 @@ import { ApolloGateway, IntrospectAndCompose } from "@apollo/gateway";
 
 const gateway = new ApolloGateway({
     supergraphSdl: new IntrospectAndCompose({
-        subgraphs: [],
+        subgraphs: [{
+            name: 'catalog',
+            url: 'http://localhost:4000'
+        }, {
+            name: 'checkout',
+            url: 'http://localhost:4001'
+        }],
     }),
     debug: true
 })
