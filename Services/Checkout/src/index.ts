@@ -12,6 +12,7 @@ const typeDefs = gql`
 
   extend type Product @key(fields: "id") {
       id: ID! @external
+      orders: [Order]
   }
   
   type Query {
@@ -41,6 +42,14 @@ const resolvers = {
                 id: id
             }))
         },
+    },
+    Product: {
+        orders(product) {
+            return orders.filter(o => {
+                const matchingProductIds = o.products.filter(productId => productId == product.id);
+                return matchingProductIds.length > 0;
+            });
+        }
     },
     Query: {
         order(_, { id }) {
