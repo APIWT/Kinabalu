@@ -1,0 +1,22 @@
+{
+  "name": "kinabalu-gateway",
+  "version": "1.0.0",
+  "description": "The gateway of Kinabalu",
+  "main": "index.js",
+  "scripts": {
+    "compile": "tsc",
+    "start": "npm run compile && node ./dist/index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@apollo/federation": "^0.38.1",
+    "@apollo/gateway": "^2.3.0",
+    "@apollo/server": "^4.3.2",
+    "graphql": "^16.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.18",
+    "typescript": "^4.9.5"
+  }
+}
