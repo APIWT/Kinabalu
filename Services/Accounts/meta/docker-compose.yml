@@ -1,0 +1,9 @@
+version: '3.1'
+name: 'kinabalu-accounts'
+services:
+  db:
+    image: postgres
+    ports:
+      - '5002:5432'
+    environment:
+      POSTGRES_PASSWORD: example

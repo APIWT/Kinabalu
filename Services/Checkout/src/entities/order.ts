@@ -9,6 +9,9 @@ export class Order {
     @Column()
     cost: number
 
+    @Column()
+    userId: number
+
     @OneToMany(type => OrderLineItem, lineItem => lineItem.order)
     lineItems: OrderLineItem[]
 }
