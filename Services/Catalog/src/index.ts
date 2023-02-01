@@ -5,16 +5,19 @@ import { startStandaloneServer } from '@apollo/server/standalone';
 import { buildSubgraphSchema } from "@apollo/federation";
 import gql from "graphql-tag";
 import { dataSource, productRepository } from "./services/dataSource";
+import { In } from "typeorm";
 
 const typeDefs = gql`
     type Product @key(fields: "id") {
         id: ID!
         name: String
+        price: Float
     }
 
     type Query {
         product(id: ID!): Product
         products: [Product]
+        productsByIds(productIds: [ID!]): [Product]
     }
 `;
 
@@ -34,7 +37,12 @@ const resolvers = {
         },
         async products() {
             return await productRepository.find();
-        }
+        },
+        async productsByIds(_, { productIds }) {
+            return await productRepository.findBy({
+                id: In(productIds)
+            })
+        },
     },
 };
 

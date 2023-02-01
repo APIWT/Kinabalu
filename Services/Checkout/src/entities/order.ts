@@ -12,6 +12,8 @@ export class Order {
     @Column()
     userId: number
 
-    @OneToMany(type => OrderLineItem, lineItem => lineItem.order)
+    @OneToMany(type => OrderLineItem, lineItem => lineItem.order, {
+        cascade: ["insert", "update", "remove"]
+    })
     lineItems: OrderLineItem[]
 }
